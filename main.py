@@ -1,8 +1,8 @@
 import os
+import bcrypt
 import base64
 import tkinter as tk
 from tkinter import filedialog
-import bcrypt
 from colorama import Fore, Style
 from cryptography.fernet import Fernet
 
@@ -139,15 +139,21 @@ def get_file_path(file_type: str) -> str:
     return file_path
 
 def main():
-    while True:
-        print(Fore.LIGHTBLUE_EX + '1. Encrypt a file' + Style.RESET_ALL)
-        print(Fore.LIGHTBLUE_EX + '2. Decrypt a file' + Style.RESET_ALL)
-        print(Fore.LIGHTBLUE_EX + '3. Exit' + Style.RESET_ALL)
+    os.system("title CryptULive")
 
-        choice = input(Fore.LIGHTMAGENTA_EX + 'Enter your choice: ' + Style.RESET_ALL)
+    while True:
+        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
+        print(Fore.LIGHTGREEN_EX + "| Option      | Description             |")
+        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
+        print(Fore.LIGHTBLUE_EX + "| 1           | Encrypt a file          |")
+        print(Fore.LIGHTBLUE_EX + "| 2           | Decrypt a file          |")
+        print(Fore.LIGHTBLUE_EX + "| 3           | Exit                    |")
+        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
+
+        choice = input(Fore.LIGHTMAGENTA_EX + "Enter your choice: ")
 
         if choice == '1':
-            password = input(Fore.LIGHTWHITE_EX + 'Enter the password: ' + Style.RESET_ALL)
+            password = input(Fore.LIGHTWHITE_EX + "Enter the password: ")
             input_file_path = get_file_path('input')
             if not input_file_path:
                 return
@@ -157,9 +163,9 @@ def main():
 
             output_file_path = output_file_path + '.cul'
             encrypt(password, input_file_path, output_file_path)
-            print(Fore.GREEN + "File Encrypted successfully!" + Style.RESET_ALL)
+            print(Fore.LIGHTGREEN_EX + "File Encrypted successfully!")
         elif choice == '2':
-            password = input(Fore.LIGHTWHITE_EX + 'Enter the password: ')
+            password = input("Enter the password: ")
             input_file_path = get_file_path('input')
             if not input_file_path:
                 return
@@ -168,12 +174,13 @@ def main():
                 return
 
             decrypt(password, input_file_path, output_file_path)
-            print(Fore.LIGHTGREEN_EX + "File Decrypted successfully!" + Style.RESET_ALL)
+            print(Fore.LIGHTGREEN_EX + "File Decrypted successfully!")
         elif choice == '3':
             print(Fore.LIGHTYELLOW_EX + "Exiting..." + Style.RESET_ALL)
             break
         else:
-            print(Fore.LIGHTRED_EX + 'Invalid choice. Please try again.' + Style.RESET_ALL)
+            print(Fore.LIGHTRED_EX + 'Invalid choice. Please try again.')
+
 
 if __name__ == '__main__':
     main()
