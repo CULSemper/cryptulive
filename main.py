@@ -7,12 +7,13 @@ from colorama import Fore, Style
 from cryptography.fernet import Fernet
 
 def encrypt(password: object, input_file_path: object, output_file_path: object) -> object:
-    # Erstellen eines zufälligen Saltwerts
+    
+    # Generating a random salt value
     salt = os.urandom(16)
 
-    # Erstellen des Schlüssels mit Bcrypt
+    # Create the key with Bcrypt
     key = bcrypt.kdf(
-        password=password.encode(),  # Passwort wird in Bytes umgewandelt
+        password=password.encode(),  # Password is converted to bytes
         salt=salt,
         desired_key_bytes=32,
         rounds=1000
@@ -20,21 +21,21 @@ def encrypt(password: object, input_file_path: object, output_file_path: object)
 
 
 
-    # Ermitteln des Dateityps
+    # Determine the file type
     _, file_extension = os.path.splitext(input_file_path)
 
-    # Dateityp als Zeichenfolge codieren
+    # Encode file type as string
     file_extension_encoded = file_extension.encode('utf-8')
 
-    # Base64-codieren des Schlüssels und Konvertierung in bytes
+    # Base64-encode the key and convert it to bytes
     key_base64 = base64.b64encode(key).decode('utf-8')
     key_bytes = key_base64.encode('utf-8')
 
-    # Erstellen des Fernet-Objekts mit dem codierten Schlüssel
+    # Create the Fernet object with the encrypted key
     fernet = Fernet(key_bytes)
 
 
-    # Versuch, die Datei zu öffnen und zu lesen
+    # Attempt to open and read the file
     try:
         with open(input_file_path, 'rb') as input_file:
             data = input_file.read()
@@ -42,17 +43,17 @@ def encrypt(password: object, input_file_path: object, output_file_path: object)
         print(Fore.LIGHTRED_EX + f'Error reading the file: {e}' + Style.RESET_ALL)
         return
 
-    # Versuch, die Daten zu verschlüsseln
+    # Attempt to encrypt the data
     try:
         encrypted_data = fernet.encrypt(data)
     except Exception as e:
         print(Fore.LIGHTRED_EX + f'Error encrypting the file: {e}' + Style.RESET_ALL)
         return
 
-    # Versuch, die verschlüsselten Daten in eine neue Datei zu schreiben
+    # Attempt to write the encrypted data to a new file
     try:
         with open(output_file_path, 'wb') as output_file:
-            # Schreibe Saltwert und Dateityp am Anfang der Datei
+            # Write salt value and file type at the beginning of the file
             output_file.write(salt)
             output_file.write(file_extension.encode())
             output_file.write(encrypted_data)
@@ -62,7 +63,7 @@ def encrypt(password: object, input_file_path: object, output_file_path: object)
 
 
 def decrypt(password, input_file_path, output_file_path):
-    # Lesen des Saltwerts und des Dateityps aus der verschlüsselten Datei
+    # Read the salt value and file type from the encrypted file
     try:
         with open(input_file_path, 'rb') as input_file:
             salt = input_file.read(16)
@@ -72,42 +73,44 @@ def decrypt(password, input_file_path, output_file_path):
         print(Fore.LIGHTRED_EX + f'Error reading the encrypted file: {e}' + Style.RESET_ALL)
         return
 
-    # Überprüfen, ob der Saltwert 16 Bytes lang ist
+    # Check if the salt value is 16 bytes long
     if len(salt) != 16:
         print(Fore.LIGHTRED_EX + "Error: Invalid salt length." + Style.RESET_ALL)
         return
 
-    # Erstellen des Schlüssels mit Bcrypt
+    # Create the key with Bcrypt
     key = bcrypt.kdf(
-        password=password.encode(),  # Passwort wird in Bytes umgewandelt
+        password=password.encode(),  # Password is converted to bytes
         salt=salt,
         desired_key_bytes=32,
         rounds=1000
     )
 
-    # Überprüfen, ob der Schlüssel tatsächlich 32 Bytes lang ist
+    # Check if the key is actually 32 bytes long
     if len(key) != 32:
         print(Fore.LIGHTRED_EX + "Error: Invalid key length." + Style.RESET_ALL)
         return
 
-    # Base64-codieren des Schlüssels und Konvertierung in bytes
+    # Base64-encode the key and convert it to bytes
     key_base64 = base64.b64encode(key).decode('utf-8')
     key_bytes = key_base64.encode('utf-8')
 
-    # Erstellen des Fernet-Objekts mit dem codierten Schlüssel
+    # Create the Fernet object with the encrypted key
     fernet = Fernet(key_bytes)
 
-    # Ausgabe des Dateityps am Anfang der Datei
-    print(Fore.LIGHTWHITE_EX + f'File extension: {file_extension.decode()}')
+    # Output the file type at the beginning of the file
+    print(Fore.LIGHTWHITE_EX + "+--------Filetype---------+" + Style.RESET_ALL)
+    print(Fore.LIGHTWHITE_EX + f'    File extension: {file_extension.decode()}' + Style.RESET_ALL)
+    print(Fore.LIGHTWHITE_EX + "+-------------------------+" + Style.RESET_ALL)
 
-    # Versuch, die verschlüsselten Daten zu entschlüsseln
+    # Attempt to decrypt the encrypted data
     try:
         decrypted_data = fernet.decrypt(encrypted_data)
     except Exception as e:
         print(Fore.LIGHTRED_EX + f'Error decrypting the file: {e}' + Style.RESET_ALL)
         return
 
-    # Versuch, die entschlüsselten Daten in eine neue Datei zu schreiben
+    # Attempt to write the decrypted data to a new file
     try:
         with open(output_file_path, 'wb') as output_file:
             output_file.write(decrypted_data)
@@ -117,7 +120,7 @@ def decrypt(password, input_file_path, output_file_path):
         print(Fore.LIGHTRED_EX + f'Error writing the decrypted file {output_file_path}: {e}' + Style.RESET_ALL)
         return
 
-    # Fragen, ob die ursprüngliche verschlüsselte Datei gelöscht werden soll
+    # Ask if you want to delete the original encrypted file
     delete_input_file = input(Fore.LIGHTYELLOW_EX + 'Do you want to delete the original encrypted file? (y/n) ' + Style.RESET_ALL)
     if delete_input_file.lower() == 'y':
         try:
@@ -127,7 +130,7 @@ def decrypt(password, input_file_path, output_file_path):
             print(Fore.LIGHTRED_EX + f'Error deleting the file {input_file_path}' + Style.RESET_ALL)
 
 def get_file_path(file_type: str) -> str:
-    # Erstellen des Dialogs zur Dateiauswahl
+    # Creating the file selection dialog
     root = tk.Tk()
     root.withdraw()
 
@@ -142,13 +145,13 @@ def main():
     os.system("title CryptULive")
 
     while True:
-        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
-        print(Fore.LIGHTGREEN_EX + "| Option      | Description             |")
-        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
-        print(Fore.LIGHTBLUE_EX + "| 1           | Encrypt a file          |")
-        print(Fore.LIGHTBLUE_EX + "| 2           | Decrypt a file          |")
-        print(Fore.LIGHTBLUE_EX + "| 3           | Exit                    |")
-        print(Fore.LIGHTGREEN_EX + "+-------------+-------------------------+")
+        print(Fore.LIGHTWHITE_EX + "+-------------+-------------------------+" + Style.RESET_ALL)
+        print(Fore.LIGHTWHITE_EX + "| Option      | Description             |" + Style.RESET_ALL)
+        print(Fore.LIGHTWHITE_EX + "+-------------+-------------------------+" + Style.RESET_ALL)
+        print(Fore.LIGHTBLUE_EX + "| 1           | Encrypt a file          |" + Style.RESET_ALL)
+        print(Fore.LIGHTBLUE_EX + "| 2           | Decrypt a file          |" + Style.RESET_ALL)
+        print(Fore.LIGHTBLUE_EX + "| 3           | Exit                    |" + Style.RESET_ALL)
+        print(Fore.LIGHTWHITE_EX + "+-------------+-------------------------+" + Style.RESET_ALL)
 
         choice = input(Fore.LIGHTMAGENTA_EX + "Enter your choice: ")
 
