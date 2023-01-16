@@ -24,8 +24,6 @@ def encrypt(password: object, input_file_path: object, output_file_path: object)
     # Determine the file type
     _, file_extension = os.path.splitext(input_file_path)
 
-    # Encode file type as string
-    file_extension_encoded = file_extension.encode('utf-8')
 
     # Base64-encode the key and convert it to bytes
     key_base64 = base64.b64encode(key).decode('utf-8')
