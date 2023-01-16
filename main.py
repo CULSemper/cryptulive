@@ -7,7 +7,7 @@ from colorama import Fore, Style
 from cryptography.fernet import Fernet
 
 def encrypt(password: object, input_file_path: object, output_file_path: object) -> object:
-    
+
     # Generating a random salt value
     salt = os.urandom(16)
 
@@ -67,7 +67,7 @@ def decrypt(password, input_file_path, output_file_path):
     try:
         with open(input_file_path, 'rb') as input_file:
             salt = input_file.read(16)
-            file_extension = input_file.read(4)
+            file_extension = input_file.read(4).decode() # Decode the file extension
             encrypted_data = input_file.read()
     except Exception as e:
         print(Fore.LIGHTRED_EX + f'Error reading the encrypted file: {e}' + Style.RESET_ALL)
@@ -98,36 +98,21 @@ def decrypt(password, input_file_path, output_file_path):
     # Create the Fernet object with the encrypted key
     fernet = Fernet(key_bytes)
 
-    # Output the file type at the beginning of the file
-    print(Fore.LIGHTWHITE_EX + "+--------Filetype---------+" + Style.RESET_ALL)
-    print(Fore.LIGHTWHITE_EX + f'    File extension: {file_extension.decode()}' + Style.RESET_ALL)
-    print(Fore.LIGHTWHITE_EX + "+-------------------------+" + Style.RESET_ALL)
-
-    # Attempt to decrypt the encrypted data
+    # Attempt to decrypt the data
     try:
         decrypted_data = fernet.decrypt(encrypted_data)
     except Exception as e:
         print(Fore.LIGHTRED_EX + f'Error decrypting the file: {e}' + Style.RESET_ALL)
         return
 
-    # Attempt to write the decrypted data to a new file
+    # Attempt to write the decrypted data to a new file with the file extension
     try:
-        with open(output_file_path, 'wb') as output_file:
+        with open(output_file_path + file_extension, 'wb') as output_file:
             output_file.write(decrypted_data)
-            output_file.write(b'.')
-            output_file.write(file_extension)
     except Exception as e:
         print(Fore.LIGHTRED_EX + f'Error writing the decrypted file {output_file_path}: {e}' + Style.RESET_ALL)
         return
 
-    # Ask if you want to delete the original encrypted file
-    delete_input_file = input(Fore.LIGHTYELLOW_EX + 'Do you want to delete the original encrypted file? (y/n) ' + Style.RESET_ALL)
-    if delete_input_file.lower() == 'y':
-        try:
-            os.remove(input_file_path)
-            print(Fore.LIGHTGREEN_EX + f'The file {input_file_path} has been successfully deleted.' + Style.RESET_ALL)
-        except OSError:
-            print(Fore.LIGHTRED_EX + f'Error deleting the file {input_file_path}' + Style.RESET_ALL)
 
 def get_file_path(file_type: str) -> str:
     # Creating the file selection dialog
